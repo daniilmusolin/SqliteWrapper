@@ -9,7 +9,7 @@ namespace SqliteWrapper {
         }
 
         /// <summary>
-        /// Select request returning List<TModel>
+        /// 'Select' request returning List<TModel>
         /// </summary>
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
         /// <param name="table">Table name</param>
@@ -53,17 +53,15 @@ namespace SqliteWrapper {
         }
 
         /// <summary>
-        /// An insert request returning a bool. True - the data was successfully
-        /// added, False - the data was not added
+        /// The 'insert' query returns the number of successfully inserted values added
         /// </summary>
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
         /// <param name="table">Table name</param>
         /// <param name="model">Model, for column selection and data matching</param>
         /// <returns>
-        /// True - the data was successfully
-        /// added, False - the data was not added
+        /// Returns the number of successfully inserted values
         /// </returns>
-        public async Task<bool> insert<TModel>(
+        public async Task<int> insert<TModel>(
             string table,
             TModel model) where TModel : class {
             string full_command = string.Empty;
@@ -82,11 +80,20 @@ namespace SqliteWrapper {
                         property_info[index].GetValue(model));
                     command.Parameters.Add(sql_parameter);
                 }
-                return await command.ExecuteNonQueryAsync() == 1 ? true : false;
+                return await command.ExecuteNonQueryAsync();
             }
         }
 
-        public async Task<bool> insert<TModel>(
+        /// <summary>
+        /// The 'insert' query returns the number of successfully inserted values added
+        /// </summary>
+        /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
+        /// <param name="table">Table name</param>
+        /// <param name="model">Model, for column selection and data matching</param>
+        /// <returns>
+        /// Returns the number of successfully inserted values
+        /// </returns>
+        public async Task<int> insert<TModel>(
             string table,
             params TModel[] models) where TModel : class {
             string full_command = string.Empty;
@@ -98,7 +105,6 @@ namespace SqliteWrapper {
             full_command = (properties.Length == 0
                 ? null : $"{full_command}({string.Join(", ", properties)}) values ")
                 ?? throw new ArgumentNullException(nameof(properties));
-
             for (int index = 0; index < models.Length; index++) {
                 string values = "(";
                 for (int index_property = 0; index_property < property_info.Length; index_property++) {
@@ -111,11 +117,10 @@ namespace SqliteWrapper {
                 }
                 full_command += values;
             }
-
             using (SqliteConnection connection = new SqliteConnection(_path_connect_database)) {
                 connection.Open();
                 SqliteCommand command = new SqliteCommand(full_command, connection);
-                return await command.ExecuteNonQueryAsync() == 1 ? true : false;
+                return await command.ExecuteNonQueryAsync();
             }
         }
     }
