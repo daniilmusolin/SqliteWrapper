@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Reflection;
 
 namespace SqliteWrapper {
@@ -19,14 +20,12 @@ namespace SqliteWrapper {
         /// </param>
         /// <returns>Returns a List<TModel> of all found data by condition</returns>
 
-        public async Task<List<TModel>?> get<TModel>(
+        public async Task<List<TModel>?> select<TModel>(
             string table,
             string? where = null) where TModel : class {
             string full_command = string.Empty;
-            string[] properties = typeof(TModel).GetProperties()
-                .Select(value => value.Name).ToArray();
-            full_command = (properties.Length == 0
-                ? null : $"select {string.Join(", ", properties)}")
+            string[] properties = typeof(TModel).GetProperties().Select(value => value.Name).ToArray();
+            full_command = (properties.Length == 0 ? null : $"select {string.Join(", ", properties)}")
                 ?? throw new ArgumentNullException(nameof(properties));
             full_command = string.IsNullOrEmpty(table) ? table : $"{full_command} from {table}"
                 ?? throw new ArgumentNullException(nameof(table));
@@ -117,6 +116,41 @@ namespace SqliteWrapper {
                 }
                 full_command += values;
             }
+            using (SqliteConnection connection = new SqliteConnection(_path_connect_database)) {
+                connection.Open();
+                SqliteCommand command = new SqliteCommand(full_command, connection);
+                return await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        /// <summary>
+        /// The "update" request returns the number of successfully updated values
+        /// </summary>
+        /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
+        /// <param name="table">Table name</param>
+        /// <param name="model">Model, for column selection and data matching</param>
+        /// <returns>
+        /// Returns the number of successfully updated values
+        /// </returns>
+        public async Task<int> update<TModel>(
+            string table,
+            TModel model,
+            string where) where TModel : class {
+            string full_command = string.Empty;
+            PropertyInfo[] property_info = typeof(TModel).GetProperties();
+            if (property_info.Length == 0) throw new ArgumentNullException(nameof(property_info));
+            full_command = string.IsNullOrEmpty(table) ? table : $"update {table} set "
+                ?? throw new ArgumentNullException(nameof(table));
+            for (int index_property = 0; index_property < property_info.Length; index_property++) {
+                PropertyInfo property = property_info[index_property];
+
+                object? data = property.GetValue(model);
+                string value = property.PropertyType == typeof(string) ? $"'{data}'" : $"{data}";
+                full_command += (index_property + 1 == property_info.Length) 
+                    ? $" {property.Name} = {value}" : $"{property.Name} ={value},";
+            }
+            full_command = string.IsNullOrEmpty(where) ? where : $"{full_command} where {where}"
+                ?? throw new ArgumentNullException(nameof(where));
             using (SqliteConnection connection = new SqliteConnection(_path_connect_database)) {
                 connection.Open();
                 SqliteCommand command = new SqliteCommand(full_command, connection);

@@ -8,14 +8,12 @@ namespace SqliteWrapper {
             SqliteWrapper sql = new SqliteWrapper("usersdata.db");
 
             //List<UserModel>? users = await sql.get<UserModel>("Users");
-            bool is_insert = await sql.insert("Users", new UserModel() { Name = "Dima", Age = 17 },
-                new UserModel() { Name = "Test", Age = 20 }, new UserModel() { Name = "Igor", Age = 33 });
-            Console.WriteLine(is_insert);
+            var data = await sql.update<UserModel>("Users", new UserModel() { Name = "Hello"}, "_id = 1");
         }
 
         public class UserModel {
             public string Name { get; set; }
-            public long Age { get; set; }
+           
         }
     }
 }
