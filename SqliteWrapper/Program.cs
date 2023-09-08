@@ -1,4 +1,5 @@
 ﻿using SqliteWrapper;
+using System.Diagnostics;
 
 namespace SqliteWrapper {
     class Program {
@@ -6,8 +7,10 @@ namespace SqliteWrapper {
 
             SqliteWrapper sql = new SqliteWrapper("usersdata.db");
 
-            List<UserModel>? users = await sql.get<UserModel>("Users");
-            bool is_insert = await sql.insert("Users", new UserModel() { Name = "Dima", Age = 17 }));
+            //List<UserModel>? users = await sql.get<UserModel>("Users");
+            bool is_insert = await sql.insert("Users", new UserModel() { Name = "Dima", Age = 17 },
+                new UserModel() { Name = "Test", Age = 20 }, new UserModel() { Name = "Igor", Age = 33 });
+            Console.WriteLine(is_insert);
         }
 
         public class UserModel {
