@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.Sqlite;
-using System;
 using System.Reflection;
 
 namespace SqliteWrapper {
@@ -15,8 +14,7 @@ namespace SqliteWrapper {
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
         /// <param name="table">Table name</param>
         /// <param name="where">
-        /// The query string, 'where' does not need to be entered,
-        /// it is generated independently
+        /// The query condition, the word "where" does not need to be entered, it is generated independently
         /// </param>
         /// <returns>Returns a List<TModel> of all found data by condition</returns>
 
@@ -57,9 +55,7 @@ namespace SqliteWrapper {
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
         /// <param name="table">Table name</param>
         /// <param name="model">Model, for column selection and data matching</param>
-        /// <returns>
-        /// Returns the number of successfully inserted values
-        /// </returns>
+        /// <returns>Returns the number of successfully inserted values</returns>
         public async Task<int> insert<TModel>(
             string table,
             TModel model) where TModel : class {
@@ -89,9 +85,7 @@ namespace SqliteWrapper {
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
         /// <param name="table">Table name</param>
         /// <param name="model">Model, for column selection and data matching</param>
-        /// <returns>
-        /// Returns the number of successfully inserted values
-        /// </returns>
+        /// <returns>Returns the number of successfully inserted values</returns>
         public async Task<int> insert<TModel>(
             string table,
             params TModel[] models) where TModel : class {
@@ -129,9 +123,7 @@ namespace SqliteWrapper {
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
         /// <param name="table">Table name</param>
         /// <param name="model">Model, for column selection and data matching</param>
-        /// <returns>
-        /// Returns the number of successfully updated values
-        /// </returns>
+        /// <returns>Returns the number of successfully updated values</returns>
         public async Task<int> update<TModel>(
             string table,
             TModel model,
@@ -151,6 +143,32 @@ namespace SqliteWrapper {
             }
             full_command = string.IsNullOrEmpty(where) ? where : $"{full_command} where {where}"
                 ?? throw new ArgumentNullException(nameof(where));
+            using (SqliteConnection connection = new SqliteConnection(_path_connect_database)) {
+                connection.Open();
+                SqliteCommand command = new SqliteCommand(full_command, connection);
+                return await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        /// <summary>
+        /// The "delete" query returns the number of successfully deleted values
+        /// </summary>
+        /// <param name="table">Table name</param>
+        /// <param name="where">
+        /// The query condition, the word "where" does not need to be entered,
+        /// it is generated independently</param>
+        /// <returns>Returns the number of successfully deleted values</returns>
+        public async Task<int> delete(
+            string table,
+            string where) {
+            string full_command = string.Empty;
+            
+            full_command = string.IsNullOrEmpty(table) ? table : $"delete from {table}"
+                ?? throw new ArgumentNullException(nameof(table));
+
+            full_command = string.IsNullOrEmpty(where) ? where : $"{full_command} where {where}"
+                ?? throw new ArgumentNullException(nameof(where));
+
             using (SqliteConnection connection = new SqliteConnection(_path_connect_database)) {
                 connection.Open();
                 SqliteCommand command = new SqliteCommand(full_command, connection);
