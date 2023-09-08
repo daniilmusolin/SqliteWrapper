@@ -162,13 +162,10 @@ namespace SqliteWrapper {
             string table,
             string where) {
             string full_command = string.Empty;
-            
             full_command = string.IsNullOrEmpty(table) ? table : $"delete from {table}"
                 ?? throw new ArgumentNullException(nameof(table));
-
             full_command = string.IsNullOrEmpty(where) ? where : $"{full_command} where {where}"
                 ?? throw new ArgumentNullException(nameof(where));
-
             using (SqliteConnection connection = new SqliteConnection(_path_connect_database)) {
                 connection.Open();
                 SqliteCommand command = new SqliteCommand(full_command, connection);
