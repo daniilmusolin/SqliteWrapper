@@ -8,7 +8,7 @@ namespace SqliteWrapper {
             _path_connect_database = $"Data Source={path_connect_database}";
         }
 
-        /// <summary>
+        /// <summary
         /// 'Select' request returning List<TModel>
         /// </summary>
         /// <typeparam name="TModel">Model, for column selection and data matching</typeparam>
